@@ -17,7 +17,7 @@ sub get_lyrics {
 }
 
 sub count_words {
-	my %wordCount = $_[0];
+	my %wordCount = %{$_[1]};
 	my $lyrics = $_[1];
 
 	my @words = split(/\s+/, $lyrics);
@@ -73,10 +73,12 @@ sub arist_word_count {
 	my @songLinks = scrape_song_links();
 
 	foreach my $link (@songLinks) {
+		sleep(21);
 		my $html = get_lyrics($link);
 		print "$html\n";
-		%wordCount = count_words($html, %wordCount);
-		last;
+		write_to_file($link, $html);
+		%wordCount = count_words($html, \%wordCount);
+		sleep(1);
 	}
 
 	# print the schtuff out
@@ -84,6 +86,22 @@ sub arist_word_count {
     	#print "$name   $wordCount{$name}\n";
     	printf "%-15s %s\n", $name, $wordCount{$name};
     }
+}
+
+sub write_to_file {
+	my $filename = $_[0];
+	my $contents = $_[1];
+
+	#filename cleansing
+	if ($filename =~ m/([a-z]+)\.html/) {
+		$filename = $1 . ".txt";
+	} else {
+		$filename = "00ps!";
+	}
+
+	open (my $handle, '>', $filename) or die "whoops";
+	print $handle "$contents";
+	close $handle;
 }
 
 arist_word_count();
