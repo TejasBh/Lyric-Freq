@@ -17,33 +17,57 @@ sub get_lyrics {
 }
 
 sub count_words {
-	my %wordCount = %{$_[1]};
-	my $lyrics = $_[1];
+	#my %wordCount = %{$_[1]};
+	#my $lyrics = $_[1];
 
-	my @words = split(/\s+/, $lyrics);
-	foreach (@words) {
-		my $word = $_;
+	my %wordCount = ();
+	my $lyrics;
+	my $dir = '/home/tejas/Progs/lyric freq/bb';
+	my @songs = ();
 
-		# word cleaning
-		if (!($word =~ m/[A-Za-z]/)) {
+	opendir(DIR, $dir) or die "shit";
+	while (my $file = readdir DIR) {
+		print "$file----\n";
+		push(@songs, $file);
+	}
+
+	foreach my $song (@songs) {
+		if (!($song =~ m/[a-z]/)) {
 			next;
 		}
 
-		# add word to hash table
-		if (exists $wordCount{$word}) {
-			$wordCount{$word}++;
-		} else {
-			$wordCount{$word} = 1;
-		}
-    }
+		local $/ = undef;
+		print "$song\n";
+		open (my $s, '<', $song) or die "shit2";
+		my $content = <$s>;
+		close ($s);
+		print "$content";
+		my @words = split(/\s+/, $content);
+		foreach (@words) {
+			my $word = $_;
 
-    return %wordCount;
-=pod
+			# word cleaning
+			if (!($word =~ m/[A-Za-z]/)) {
+				next;
+			}
+
+			# add word to hash table
+			if (exists $wordCount{$word}) {
+				$wordCount{$word}++;
+			} else {
+				$wordCount{$word} = 1;
+			}
+		}
+	}
+
+	closedir DIR;
+    #return %wordCount;
+
     foreach my $name (keys %wordCount) {
     	#print "$name   $wordCount{$name}\n";
     	printf "%-15s %s\n", $name, $wordCount{$name};
     }
-=cut
+
 }
 
 sub scrape_song_links {
@@ -76,8 +100,7 @@ sub arist_word_count {
 		sleep(21);
 		my $html = get_lyrics($link);
 		print "$html\n";
-		write_to_file($link, $html);
-		%wordCount = count_words($html, \%wordCount);
+		#%wordCount = count_words($html, \%wordCount);
 		sleep(1);
 	}
 
@@ -104,6 +127,6 @@ sub write_to_file {
 	close $handle;
 }
 
-arist_word_count();
+#arist_word_count();
 #scrape_song_links();
-#count_words();
+count_words();
